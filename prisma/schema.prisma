@@ -1,0 +1,75 @@
+// 개발은 SQLite, 배포 때 PostgreSQL로 바꾼다 (provider만 변경).
+// SQLite는 enum을 지원하지 않아 level, kind는 문자열로 둔다.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Law {
+  id       String       @id @default(cuid())
+  name     String       @unique
+  slug     String       @unique
+  versions LawVersion[]
+}
+
+model LawVersion {
+  id            String      @id @default(cuid())
+  lawId         String
+  law           Law         @relation(fields: [lawId], references: [id], onDelete: Cascade)
+  effectiveDate String // YYYY-MM-DD
+  sourceFile    String?
+  importedAt    DateTime    @default(now())
+  provisions    Provision[]
+
+  @@unique([lawId, effectiveDate])
+}
+
+model Provision {
+  id        String      @id
+  versionId String
+  version   LawVersion  @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Provision?  @relation("tree", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Provision[] @relation("tree")
+  /// 항·호·목이 속한 조. 조 하나를 한 번에 불러올 때 쓴다.
+  articleId String?
+  /// PART | CHAPTER | SECTION | SUBSECTION | ARTICLE | PARAGRAPH | ITEM | SUBITEM
+  level     String
+  number    Int
+  branch    Int         @default(0)
+  /// 조: "750의2", 항: "①", 호: "1.", 목: "가.", 편: "제1편"
+  key       String
+  /// 조 정렬용 (750의2 → 75002). 조가 아니면 0
+  sortKey   Int         @default(0)
+  /// 문서 안 순서
+  seq       Int
+  title     String?
+  text      String      @default("")
+  isDeleted Boolean     @default(false)
+  /// 개정 표기, 줄바꿈으로 구분
+  amendNote String?
+
+  refsFrom ProvisionRef[] @relation("from")
+  refsTo   ProvisionRef[] @relation("to")
+
+  @@index([versionId, level, sortKey])
+  @@index([versionId, level, key])
+  @@index([articleId])
+}
+
+model ProvisionRef {
+  fromId String
+  from   Provision @relation("from", fields: [fromId], references: [id], onDelete: Cascade)
+  toId   String
+  to     Provision @relation("to", fields: [toId], references: [id], onDelete: Cascade)
+  /// REF(참조) | APPLY(준용)
+  kind   String
+
+  @@id([fromId, toId])
+  @@index([toId])
+}

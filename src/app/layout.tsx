@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { NavigationProgress } from "@/shared/components/NavigationProgress";
 import { SiteFooter } from "@/shared/components/SiteFooter";
 import { SiteHeader } from "./_components/SiteHeader";
 import "./globals.css";
@@ -12,6 +14,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="ko">
       <body className="flex min-h-screen flex-col antialiased">
+        <Suspense>
+          <NavigationProgress />
+        </Suspense>
         <SiteHeader />
         <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">{children}</main>
         <SiteFooter />

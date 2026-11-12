@@ -4,6 +4,14 @@
 
 개발하면서 막혔던 것들 기록.
 
+### 목차 페이지가 매번 2.6초, 1.76MB
+- 날짜: 2026-11-12
+- 문제: `/laws/civil`이 다시 열어도 매번 2.5~2.7초. HTML 1.76MB
+- 원인: 서버에서 조문 1,337개를 모두 `<Link>`로 그려서, HTML과 클라이언트용 데이터(RSC payload)에 같은 내용이 이중으로 실림
+- 해결: 목차 행을 `[key, title, level, depth, 삭제여부]` 배열로만 보내고, 클라이언트 컴포넌트(`TocTree`)가 펼친 편·장·절의 자식만 그림. 목차 데이터는 버전 id 키로 `unstable_cache`
+- 결과 (개발 모드, 다시 열 때): 2.6초 → 0.14초, 1.76MB → 102KB. 배포 모드에서는 0.04초, gzip 20KB
+- 참고: 다른 페이지도 처음 열 때 1.5~6초 걸리는 건 개발 모드가 그때 컴파일해서임. 배포 모드(`npm run build && npm start`)에서는 모든 페이지 0.1초 이하. turbopack(`next dev --turbopack`)은 처음 컴파일은 비슷하고 다시 열 때 0.1초쯤 더 느려서 안 씀
+
 ### 폴더 구조를 바꾼 뒤 개발 서버가 모든 페이지에 500
 - 날짜: 2026-11-12
 - 문제: 파일을 features/로 옮긴 뒤 켜져 있던 next dev가 `Failed to read source code from ...\src\components\AuthForm.tsx`(옮기기 전 경로)로 500. 파일을 다시 저장하니 일부는 돌아왔지만 이후 `Jest worker encountered 2 child process exceptions, exceeding retry limit`으로 계속 500

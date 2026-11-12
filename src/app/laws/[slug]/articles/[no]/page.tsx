@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { after } from "next/server";
+import { cache } from "react";
 import { getCurrentUser } from "@/features/auth";
 import {
   LawToolbar,
@@ -8,6 +10,7 @@ import {
   articleHref,
   articleName,
   buildTree,
+  getBreadcrumb,
   getLaw,
   keyToParam,
   normalizeArticleKey,
@@ -20,15 +23,23 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ slug: string; no: string }> };
 
+/** 조문 본체 + 참조. 페이지 제목과 본문이 같은 요청 안에서 한 번만 조회하도록 cache */
+const getArticle = cache((versionId: string, key: string) =>
+  prisma.provision.findFirst({
+    where: { versionId, level: "ARTICLE", key },
+    include: {
+      refsFrom: { include: { to: { select: { key: true, title: true } } } },
+      refsTo: { include: { from: { select: { key: true, title: true, sortKey: true } } } },
+    },
+  }),
+);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, no } = await params;
   const key = normalizeArticleKey(no);
   if (!key) return {};
   const law = await getLaw(slug);
-  const a = await prisma.provision.findFirst({
-    where: { versionId: law.version.id, level: "ARTICLE", key },
-    select: { title: true },
-  });
+  const a = await getArticle(law.version.id, key);
   return { title: `${articleName(key)}${a?.title ? `(${a.title})` : ""} - ${law.name}` };
 }
 
@@ -58,17 +69,6 @@ function PartNode({ node, slug, known }: { node: TreeNode<Part>; slug: string; k
   );
 }
 
-async function breadcrumb(parentId: string | null) {
-  const chain: { key: string; title: string | null }[] = [];
-  while (parentId) {
-    const p = await prisma.provision.findUnique({ where: { id: parentId }, select: { key: true, title: true, parentId: true } });
-    if (!p) break;
-    chain.unshift(p);
-    parentId = p.parentId;
-  }
-  return chain;
-}
-
 export default async function ArticlePage({ params }: Props) {
   const { slug, no } = await params;
   const key = normalizeArticleKey(no);
@@ -76,22 +76,16 @@ export default async function ArticlePage({ params }: Props) {
   const law = await getLaw(slug);
   const versionId = law.version.id;
 
-  const article = await prisma.provision.findFirst({
-    where: { versionId, level: "ARTICLE", key },
-    include: {
-      refsFrom: { include: { to: { select: { key: true, title: true } } } },
-      refsTo: { include: { from: { select: { key: true, title: true, sortKey: true } } } },
-    },
-  });
+  const article = await getArticle(versionId, key);
   if (!article) notFound();
 
-  const [parts, crumbs, prev, next] = await Promise.all([
+  const [parts, crumbs, prev, next, user] = await Promise.all([
     prisma.provision.findMany({
       where: { articleId: article.id },
       orderBy: { seq: "asc" },
       select: { id: true, parentId: true, level: true, key: true, text: true, amendNote: true },
     }),
-    breadcrumb(article.parentId),
+    getBreadcrumb(versionId, article.parentId),
     prisma.provision.findFirst({
       where: { versionId, level: "ARTICLE", sortKey: { lt: article.sortKey } },
       orderBy: { sortKey: "desc" },
@@ -102,14 +96,14 @@ export default async function ArticlePage({ params }: Props) {
       orderBy: { sortKey: "asc" },
       select: { key: true, title: true },
     }),
+    getCurrentUser(),
   ]);
 
-  const user = await getCurrentUser();
   const path = `/laws/${slug}/articles/${keyToParam(key)}`;
   const ref = user ? { userId: user.id, lawId: law.id, articleKey: key } : null;
-  const [bookmarked, note] = ref
-    ? await Promise.all([isBookmarked(ref), getNote(ref), recordView(ref)])
-    : [false, ""];
+  const [bookmarked, note] = ref ? await Promise.all([isBookmarked(ref), getNote(ref)]) : [false, ""];
+  // 최근 본 조문 기록은 화면과 상관없으므로 응답을 보낸 뒤에 한다.
+  if (ref) after(() => recordView(ref));
 
   const known = new Set(article.refsFrom.map((r) => r.to.key));
   const incoming = [...article.refsTo].sort((a, b) => a.from.sortKey - b.from.sortKey);

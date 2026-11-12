@@ -73,6 +73,8 @@ DB는 개발 중엔 SQLite, 배포 때 Supabase (PostgreSQL, pgvector)로 옮길
    API를 못 쓸 때는 본문을 `data/raw/민법.txt`로 저장하고 `law:fetch` 대신 `npm run law:parse`
 3. `npm run dev` 후 http://localhost:3000
 
+개발 모드는 페이지를 처음 열 때 컴파일해서 느림. 실제 속도는 `npm run build && npm start`로 확인할 것
+
 테스트: `npm test`
 
 스키마를 바꾼 뒤에는 `npm run db:push`를 다시 실행. 개발 서버가 켜져 있으면 Windows에서 Prisma 파일이 잠겨 실패하니 서버를 끄고 할 것

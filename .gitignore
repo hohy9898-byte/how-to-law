@@ -43,6 +43,7 @@ yarn-error.log*
 /data/parsed/
 # API 원본 응답 (링크에 OC 값이 들어 있음)
 /data/raw/api/
+/data/raw/cases/
 
 # vercel
 .vercel

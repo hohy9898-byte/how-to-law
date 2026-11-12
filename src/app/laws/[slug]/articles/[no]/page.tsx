@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { after } from "next/server";
 import { cache } from "react";
 import { getCurrentUser } from "@/features/auth";
+import { CaseSection } from "@/features/cases";
 import {
   LawToolbar,
   LinkedText,
@@ -144,6 +145,8 @@ export default async function ArticlePage({ params }: Props) {
         ))}
         {article.amendNote && <p className="mt-2 text-xs text-muted">{article.amendNote.split("\n").join(" ")}</p>}
       </article>
+
+      <CaseSection lawId={law.id} articleKey={key} />
 
       <section className="mt-8 border-t border-border pt-4">
         <h2 className="mb-2 text-sm font-medium">내 메모</h2>

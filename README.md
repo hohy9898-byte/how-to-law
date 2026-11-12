@@ -10,6 +10,9 @@
 - 목차(편·장·절) 탐색, 키워드 검색(법령별, 전체), 조문 번호로 바로 이동
 - 준용·참조 조문 링크
 - 회원: 이메일 가입·로그인, 조문 즐겨찾기, 최근 본 조문, 조문 메모, 내 페이지
+- 조문 화면에 관련 대법원 판례 (최신 5건, 주요 5건). 사건번호를 누르면 팝업으로 핵심 구문, 판시사항, 판결요지, 참조조문, 전문
+  - 주요 판례: 직접 붙인 기출 표시 → 다른 대법원 판례가 인용한 수 순
+  - 핵심 구문: AI가 판결요지에서 원문 그대로 발췌. 원문에 없는 문장은 자동으로 버림
 - 빈칸 채우기
   - 빈칸은 직접 지정하거나 자동 생성 (숫자·기간, 요건·효과 키워드 등)
   - 키워드 → 구절 → 조문 전체 순으로 난이도 조절, 초성 힌트
@@ -18,7 +21,6 @@
 
 2단계
 - 판례 카드 (사건번호·쟁점 / 판결요지·결론), 판결요지 빈칸, 결론 OX
-- 조문 화면에서 관련 판례 보기
 - 선택형 기출을 지문별 OX로 나누고 근거 조문·판례 연결
 - 오답노트
 
@@ -40,7 +42,7 @@
 ```
 Law ─< LawVersion ─< Provision (편/장/절/조/항/호/목, parent_id)
 Provision ─< ProvisionRef (준용·참조)
-Case ─< CaseProvisionLink >─ Provision
+Case ─< CaseArticle (법령, 조 번호)
 Exam ─< Question ─< Choice ─< Evidence (근거 조문/판례)
 ClozeCard (provision_id, 빈칸 위치, 난이도) / CaseCard
 ReviewLog (user, card, 결과, FSRS 상태)
@@ -71,7 +73,14 @@ DB는 개발 중엔 SQLite, 배포 때 Supabase (PostgreSQL, pgvector)로 옮길
    npm run law:import
    ```
    API를 못 쓸 때는 본문을 `data/raw/민법.txt`로 저장하고 `law:fetch` 대신 `npm run law:parse`
-3. `npm run dev` 후 http://localhost:3000
+3. 판례 받기 (선택)
+   ```
+   npm run cases:fetch -- 750,162,390   # 조 번호 목록. 편 전체는 --part 3
+   npm run cases:summarize -- --limit 20 # 핵심 구문 발췌. .env에 ANTHROPIC_API_KEY 필요, 없으면 건너뜀
+   npm run cases:mark -- 2013다40681     # 기출 표시. 끄려면 --off
+   ```
+   판례 원본은 `data/raw/cases/`에 쌓아 두고 다시 부르지 않음. 조 하나에 API 호출 25회 정도
+4. `npm run dev` 후 http://localhost:3000
 
 개발 모드는 페이지를 처음 열 때 컴파일해서 느림. 실제 속도는 `npm run build && npm start`로 확인할 것
 
@@ -91,14 +100,15 @@ src/
     search/         법령별·전체 검색
     auth/           가입·로그인, 비밀번호 해시(scrypt), 세션(httpOnly 쿠키 + DB)
     study/          즐겨찾기, 최근 본 조문, 메모
-  shared/           db.ts, 기능과 무관한 컴포넌트
-scripts/            fetch, parse, import (features/law/parser 사용)
+    cases/          판례 수집(api-client), 참조조문 파싱, AI 핵심 구문(key-sentences, verbatim), 판례 목록·팝업
+  shared/           db.ts, lawgokr.ts(법령정보센터 API 공통 호출), 기능과 무관한 컴포넌트
+scripts/            law:fetch·parse·import, cases:fetch·summarize·mark
 prisma/             DB 스키마
 ```
 
 규칙 (ESLint `no-restricted-imports`로 검사)
 - 다른 기능은 `@/features/<기능>`(index.ts)으로만 import. 같은 기능 안에서는 상대 경로
-- 의존 방향: shared ← law ← search, study. auth는 shared만 사용, study는 auth도 사용. 기능은 app/에 의존하지 않음
+- 의존 방향: shared ← law ← search, study, cases. auth는 shared만 사용, study는 auth도 사용. 기능은 app/에 의존하지 않음
 - 각 기능의 서버 액션, 로직, 컴포넌트, 테스트는 그 기능 폴더 안에 둔다
 - `@/features/law` 등 index.ts에는 DB 조회가 섞여 있어서 클라이언트 컴포넌트에서 import하면 안 됨. 클라이언트 컴포넌트는 같은 기능 안의 파일을 상대 경로로 씀
 - 새 기능(빈칸, 복습, 판례, 기출, AI 답안)은 `features/<이름>/`으로 추가

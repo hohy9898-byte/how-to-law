@@ -11,9 +11,13 @@
     "db:push": "prisma db push",
     "law:fetch": "tsx scripts/fetch-law.ts",
     "law:parse": "tsx scripts/parse-law.ts",
-    "law:import": "tsx scripts/import-law.ts"
+    "law:import": "tsx scripts/import-law.ts",
+    "cases:fetch": "tsx scripts/cases-fetch.ts",
+    "cases:summarize": "tsx scripts/cases-summarize.ts",
+    "cases:mark": "tsx scripts/cases-mark.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
     "@prisma/client": "^6.16.2",
     "next": "15.5.4",
     "react": "19.1.0",

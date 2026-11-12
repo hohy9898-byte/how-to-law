@@ -18,6 +18,7 @@ model Law {
   bookmarks   Bookmark[]
   recentViews RecentView[]
   notes       Note[]
+  caseLinks   CaseArticle[]
 }
 
 model LawVersion {
@@ -137,4 +138,50 @@ model Note {
 
   @@id([userId, lawId, articleKey])
   @@index([userId, updatedAt])
+}
+
+// ── 판례 ──────────────────────────────────────────
+// 법령정보센터 판례 API에서 수집. 조문과는 (lawId, articleKey)로 연결한다.
+
+model Case {
+  /// 판례일련번호
+  id           String        @id
+  /// 사건번호 (예: 2013다40681)
+  caseNo       String        @unique
+  court        String
+  /// YYYY-MM-DD
+  decidedAt    String
+  caseName     String
+  /// 판시사항
+  holdings     String        @default("")
+  /// 판결요지
+  summary      String        @default("")
+  /// 참조조문 원문
+  refArticles  String        @default("")
+  /// 참조판례 원문
+  refCases     String        @default("")
+  /// 판례 전문
+  fullText     String        @default("")
+  /// 수집한 판례들 가운데 이 판례를 참조판례로 든 수
+  citedBy      Int           @default(0)
+  /// 직접 붙이는 "기출" 표시
+  examMarked   Boolean       @default(false)
+  /// AI가 판결요지에서 원문 그대로 발췌한 핵심 문장 (JSON 문자열 배열)
+  keySentences String?
+  keyModel     String?
+  fetchedAt    DateTime      @default(now())
+  articles     CaseArticle[]
+
+  @@index([decidedAt])
+}
+
+model CaseArticle {
+  caseId     String
+  case       Case   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  lawId      String
+  law        Law    @relation(fields: [lawId], references: [id], onDelete: Cascade)
+  articleKey String
+
+  @@id([caseId, lawId, articleKey])
+  @@index([lawId, articleKey])
 }

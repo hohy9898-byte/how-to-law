@@ -55,27 +55,28 @@ DB는 개발 중엔 SQLite, 배포 때 Supabase (PostgreSQL, pgvector)로 옮길
 
 ## 실행 방법
 
-1. 민법 원문 받기: law.go.kr에서 민법 본문을 텍스트로 저장하거나 전체 복사해서 `data/raw/민법.txt`(UTF-8)로 저장
-   - 첫 줄이 "민법", 그 아래 `[시행 YYYY. M. D.]` 줄이 있어야 함
-2. 설치, DB 만들기
+1. 설치, DB 만들기
    ```
    npm install
    cp .env.example .env
    npm run db:push
    ```
-3. 파싱 → DB에 넣기
+   `.env`의 `LAW_API_OC`에 법령정보센터 Open API 인증값(가입 이메일의 @ 앞부분)을 넣는다. 호출하는 PC의 IP가 등록돼 있어야 함
+2. 법령 받기 → DB에 넣기
    ```
-   npm run law:parse
+   npm run law:fetch        # 기본 민법. 다른 법은 npm run law:fetch -- 상법
    npm run law:import
    ```
-4. `npm run dev` 후 http://localhost:3000
+   API를 못 쓸 때는 본문을 `data/raw/민법.txt`로 저장하고 `law:fetch` 대신 `npm run law:parse`
+3. `npm run dev` 후 http://localhost:3000
 
 테스트: `npm test`
 
 ## 코드 구조
 
-- `src/lib/law-parser/` 원문 → 공통 트리 변환. `adapters/text.ts`가 텍스트 파일용, 나중에 API용 어댑터 추가
-- `scripts/` parse, import 스크립트
+- `src/lib/law-parser/` 원문 → 공통 트리 변환. `adapters/api.ts`가 API 응답용, `adapters/text.ts`가 텍스트 파일용
+- `src/lib/law-api/` 법령정보센터 API 호출 (수집 스크립트에서만 사용)
+- `scripts/` fetch, parse, import 스크립트
 - `prisma/schema.prisma` DB 스키마
 - `src/app/laws/[slug]/` 목차, `articles/[no]` 조문 보기, `search` 검색
 

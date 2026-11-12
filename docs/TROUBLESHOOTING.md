@@ -4,6 +4,29 @@
 
 개발하면서 막혔던 것들 기록.
 
+### npm install 후 Prisma가 동작하지 않음
+- 날짜: 2026-11-12
+- 문제: `npm install` 때 `npm warn install-scripts … not yet covered by allowScripts` 경고가 뜨고 Prisma 엔진, esbuild 등이 제대로 설치되지 않음
+- 원인: npm 11은 패키지의 설치 스크립트(postinstall 등)를 기본으로 막음
+- 해결: `npm install-scripts ls`로 확인 후 `npm install-scripts approve @prisma/client @prisma/engines prisma esbuild sharp`, 이어서 `npm rebuild`. 허용 목록은 package.json의 `allowScripts`에 저장됨
+
+### create-next-app이 기존 폴더에서 실행 안 됨
+- 날짜: 2026-11-12
+- 문제: README.md가 있는 폴더에서는 create-next-app이 파일 충돌로 멈춤
+- 해결: 임시 폴더에 생성한 뒤 README.md와 .git을 빼고 프로젝트 폴더로 복사
+
+### 가지 조문이 "제7의2조"로 표시됨
+- 날짜: 2026-11-12
+- 문제: 화면에서 가지 조문이 `제7의2조`로 나옴. 법령 표기는 `제7조의2`
+- 원인: 조 키("7의2") 앞뒤에 "제", "조"만 붙여서 표시함
+- 해결: `src/lib/law-keys.ts`에 `articleName()`을 만들고 목차·조문·검색 화면에서 모두 이 함수로 표시
+
+### API 어댑터 테스트 1건 실패 (테스트 쪽 문제)
+- 날짜: 2026-11-12
+- 문제: `api.test.ts`에서 제3편의 첫 번째 하위 항목을 제9절의2로 기대했는데 제436조가 나옴
+- 원인: 테스트 샘플을 만들 때 장을 빼서 제436조가 제3편 바로 아래 첫 번째로 붙음. 어댑터는 정상
+- 해결: 순서 대신 `level === "SECTION"`으로 찾도록 테스트 수정. 샘플에서 일부만 뽑을 땐 상위 계층이 빠지는지 확인할 것
+
 ### 법령 API 응답 형식이 일정하지 않음
 - 날짜: 2026-11-12
 - 문제: 제40조처럼 항 번호 없이 호만 있는 조는 `항`이 배열이 아니라 객체로 옴. 삭제 조문은 `삭제 <2015.2.3>`처럼 날짜만 있어서 본문에 그대로 남음

@@ -11,10 +11,13 @@ datasource db {
 }
 
 model Law {
-  id       String       @id @default(cuid())
-  name     String       @unique
-  slug     String       @unique
-  versions LawVersion[]
+  id          String       @id @default(cuid())
+  name        String       @unique
+  slug        String       @unique
+  versions    LawVersion[]
+  bookmarks   Bookmark[]
+  recentViews RecentView[]
+  notes       Note[]
 }
 
 model LawVersion {
@@ -72,4 +75,66 @@ model ProvisionRef {
 
   @@id([fromId, toId])
   @@index([toId])
+}
+
+// ── 회원 ──────────────────────────────────────────
+// 회원 데이터는 Provision id가 아니라 (lawId, articleKey)로 조문을 가리킨다.
+// law:import가 버전을 지우고 다시 넣으면 Provision id가 바뀌기 때문.
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String
+  createdAt    DateTime     @default(now())
+  sessions     Session[]
+  bookmarks    Bookmark[]
+  recentViews  RecentView[]
+  notes        Note[]
+}
+
+model Session {
+  /// 쿠키 토큰의 sha256 해시
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+
+  @@index([userId])
+}
+
+model Bookmark {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lawId      String
+  law        Law      @relation(fields: [lawId], references: [id], onDelete: Cascade)
+  articleKey String
+  createdAt  DateTime @default(now())
+
+  @@id([userId, lawId, articleKey])
+  @@index([userId, createdAt])
+}
+
+model RecentView {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lawId      String
+  law        Law      @relation(fields: [lawId], references: [id], onDelete: Cascade)
+  articleKey String
+  viewedAt   DateTime @default(now())
+
+  @@id([userId, lawId, articleKey])
+  @@index([userId, viewedAt])
+}
+
+model Note {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lawId      String
+  law        Law      @relation(fields: [lawId], references: [id], onDelete: Cascade)
+  articleKey String
+  body       String
+  updatedAt  DateTime @updatedAt
+
+  @@id([userId, lawId, articleKey])
+  @@index([userId, updatedAt])
 }

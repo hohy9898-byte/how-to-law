@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { LawToolbar } from "@/components/LawToolbar";
 import { prisma } from "@/lib/db";
 import { DIVISIONS, articleHref, articleName, buildTree, getLaw, type TreeNode } from "@/lib/law";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  return { title: `${(await getLaw((await params).slug)).name} 목차` };
+}
 
 type Row = { id: string; parentId: string | null; level: string; key: string; title: string | null; isDeleted: boolean };
 

@@ -4,6 +4,24 @@
 
 개발하면서 막혔던 것들 기록.
 
+### 없는 조문이 404가 아니라 200, 로그인 리다이렉트가 307이 아니라 200
+- 날짜: 2026-11-12
+- 문제: `/laws/civil/articles/9999`가 404 화면은 나오는데 상태 코드는 200. 비로그인으로 `/me`에 가면 307 대신 200
+- 원인: `src/app/loading.tsx`가 있으면 페이지가 스트리밍으로 200을 먼저 보내서, 뒤에 실행되는 `notFound()`, `redirect()`가 상태 코드를 못 바꿈 (클라이언트에서만 처리됨)
+- 해결: 루트 `loading.tsx` 삭제. 로딩 화면이 필요하면 notFound·redirect를 안 쓰는 하위 경로에만 둘 것
+
+### 개발 서버가 켜져 있으면 prisma generate 실패
+- 날짜: 2026-11-12
+- 문제: 스키마 바꾸고 `npx prisma db push` 했는데 클라이언트 생성이 `EPERM: operation not permitted, rename ... query_engine-windows.dll.node`로 실패
+- 원인: Windows에서 실행 중인 next dev가 Prisma 엔진 DLL을 잡고 있음. 서버 작업을 멈춰도 자식 node 프로세스가 남아 있을 수 있음
+- 해결: 개발 서버(남은 node 프로세스 포함)를 끄고 `npx prisma generate` 다시 실행
+
+### Git Bash에서 curl로 폼 테스트할 때 값이 바뀌어 전송됨
+- 날짜: 2026-11-12
+- 문제: curl로 회원가입 폼을 보냈더니 `next=/laws/...`가 `C:/Program Files/Git/laws/...`로 바뀌고, 한글 메모는 깨져서 저장됨
+- 원인: Git Bash(MSYS)가 `/`로 시작하는 인자를 Windows 경로로 바꿈. 명령줄 인자의 한글은 UTF-8이 아니라 시스템 코드페이지로 넘어감. 앱 문제 아님 (브라우저는 정상)
+- 해결: `export MSYS_NO_PATHCONV=1` 후 실행. 한글 값은 UTF-8 파일로 저장하고 `-F "body=<note.txt"`로 보냄
+
 ### npm install 후 Prisma가 동작하지 않음
 - 날짜: 2026-11-12
 - 문제: `npm install` 때 `npm warn install-scripts … not yet covered by allowScripts` 경고가 뜨고 Prisma 엔진, esbuild 등이 제대로 설치되지 않음

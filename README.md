@@ -7,8 +7,9 @@
 
 1단계 (MVP)
 - 민법 조문 수집 (국가법령정보센터 Open API), 조·항·호·목 단위로 저장, 시행일별 버전 관리
-- 목차(편·장·절) 탐색, 키워드 검색, 조문 번호로 바로 이동
+- 목차(편·장·절) 탐색, 키워드 검색(법령별, 전체), 조문 번호로 바로 이동
 - 준용·참조 조문 링크
+- 회원: 이메일 가입·로그인, 조문 즐겨찾기, 최근 본 조문, 조문 메모, 내 페이지
 - 빈칸 채우기
   - 빈칸은 직접 지정하거나 자동 생성 (숫자·기간, 요건·효과 키워드 등)
   - 키워드 → 구절 → 조문 전체 순으로 난이도 조절, 초성 힌트
@@ -48,6 +49,8 @@ AIAnswer (question_id, 본문, 인용, 검증 결과, 검수 여부)
 
 빈칸은 조문 버전 + 글자 위치로 저장해서 개정됐을 때 영향받는 카드를 찾을 수 있게 한다.
 
+회원 데이터(Bookmark, RecentView, Note)는 Provision id가 아니라 (법령, 조 번호)로 조문을 가리킨다. `law:import`가 버전을 다시 넣으면 Provision id가 바뀌기 때문.
+
 ## 스택
 
 Next.js, TypeScript, Tailwind, Prisma, Claude API
@@ -72,6 +75,8 @@ DB는 개발 중엔 SQLite, 배포 때 Supabase (PostgreSQL, pgvector)로 옮길
 
 테스트: `npm test`
 
+스키마를 바꾼 뒤에는 `npm run db:push`를 다시 실행. 개발 서버가 켜져 있으면 Windows에서 Prisma 파일이 잠겨 실패하니 서버를 끄고 할 것
+
 ## 코드 구조
 
 - `src/lib/law-parser/` 원문 → 공통 트리 변환. `adapters/api.ts`가 API 응답용, `adapters/text.ts`가 텍스트 파일용
@@ -79,6 +84,8 @@ DB는 개발 중엔 SQLite, 배포 때 Supabase (PostgreSQL, pgvector)로 옮길
 - `scripts/` fetch, parse, import 스크립트
 - `prisma/schema.prisma` DB 스키마
 - `src/app/laws/[slug]/` 목차, `articles/[no]` 조문 보기, `search` 검색
+- `src/app/search` 전체 검색, `login`·`signup`·`me` 회원 화면, `actions/` 서버 액션
+- `src/lib/auth/` 비밀번호 해시(scrypt), 세션(httpOnly 쿠키 + DB), `src/lib/user-data.ts` 즐겨찾기·최근 본 조문·메모
 
 ## 참고
 

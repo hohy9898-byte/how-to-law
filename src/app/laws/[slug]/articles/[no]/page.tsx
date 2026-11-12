@@ -1,11 +1,30 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { toggleBookmarkAction } from "@/app/actions/article";
 import { LawToolbar } from "@/components/LawToolbar";
 import { LinkedText } from "@/components/LinkedText";
+import { NoteEditor } from "@/components/NoteEditor";
+import { getCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { articleHref, articleName, buildTree, getLaw, normalizeArticleKey, type TreeNode } from "@/lib/law";
+import { articleHref, articleName, buildTree, getLaw, keyToParam, normalizeArticleKey, type TreeNode } from "@/lib/law";
+import { getNote, isBookmarked, recordView } from "@/lib/user-data";
 
 export const dynamic = "force-dynamic";
+
+type Props = { params: Promise<{ slug: string; no: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug, no } = await params;
+  const key = normalizeArticleKey(no);
+  if (!key) return {};
+  const law = await getLaw(slug);
+  const a = await prisma.provision.findFirst({
+    where: { versionId: law.version.id, level: "ARTICLE", key },
+    select: { title: true },
+  });
+  return { title: `${articleName(key)}${a?.title ? `(${a.title})` : ""} - ${law.name}` };
+}
 
 type Part = { id: string; parentId: string | null; level: string; key: string; text: string; amendNote: string | null };
 
@@ -44,7 +63,7 @@ async function breadcrumb(parentId: string | null) {
   return chain;
 }
 
-export default async function ArticlePage({ params }: { params: Promise<{ slug: string; no: string }> }) {
+export default async function ArticlePage({ params }: Props) {
   const { slug, no } = await params;
   const key = normalizeArticleKey(no);
   if (!key) notFound();
@@ -79,6 +98,13 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
     }),
   ]);
 
+  const user = await getCurrentUser();
+  const path = `/laws/${slug}/articles/${keyToParam(key)}`;
+  const ref = user ? { userId: user.id, lawId: law.id, articleKey: key } : null;
+  const [bookmarked, note] = ref
+    ? await Promise.all([isBookmarked(ref), getNote(ref), recordView(ref)])
+    : [false, ""];
+
   const known = new Set(article.refsFrom.map((r) => r.to.key));
   const incoming = [...article.refsTo].sort((a, b) => a.from.sortKey - b.from.sortKey);
   const label = (a: { key: string; title: string | null }) => `${articleName(a.key)}${a.title ? `(${a.title})` : ""}`;
@@ -100,11 +126,27 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       </nav>
 
       <article className="leading-7">
-        <h1 className="mb-3 text-lg font-semibold">
-          {articleName(article.key)}
-          {article.title && `(${article.title})`}
-          {article.isDeleted && <span className="ml-2 text-sm font-normal text-muted">삭제</span>}
-        </h1>
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <h1 className="text-lg font-semibold">
+            {articleName(article.key)}
+            {article.title && `(${article.title})`}
+            {article.isDeleted && <span className="ml-2 text-sm font-normal text-muted">삭제</span>}
+          </h1>
+          {user && (
+            <form action={toggleBookmarkAction}>
+              <input type="hidden" name="lawId" value={law.id} />
+              <input type="hidden" name="articleKey" value={key} />
+              <input type="hidden" name="path" value={path} />
+              <button
+                aria-pressed={bookmarked}
+                title={bookmarked ? "즐겨찾기 해제" : "즐겨찾기"}
+                className={`shrink-0 rounded border px-2 py-0.5 text-sm ${bookmarked ? "border-accent text-accent" : "border-border hover:text-accent"}`}
+              >
+                {bookmarked ? "★ 즐겨찾기" : "☆ 즐겨찾기"}
+              </button>
+            </form>
+          )}
+        </div>
         {article.text && (
           <p>
             <LinkedText text={article.text} slug={slug} known={known} />
@@ -115,6 +157,20 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         ))}
         {article.amendNote && <p className="mt-2 text-xs text-muted">{article.amendNote.split("\n").join(" ")}</p>}
       </article>
+
+      <section className="mt-8 border-t border-border pt-4">
+        <h2 className="mb-2 text-sm font-medium">내 메모</h2>
+        {user ? (
+          <NoteEditor key={path} lawId={law.id} articleKey={key} path={path} initial={note} />
+        ) : (
+          <p className="text-sm text-muted">
+            <Link href={`/login?next=${encodeURIComponent(path)}`} className="text-accent hover:underline">
+              로그인
+            </Link>
+            하면 이 조문을 즐겨찾기하고 메모를 남길 수 있습니다.
+          </p>
+        )}
+      </section>
 
       {(article.refsFrom.length > 0 || incoming.length > 0) && (
         <section className="mt-8 grid gap-4 border-t border-border pt-4 text-sm sm:grid-cols-2">

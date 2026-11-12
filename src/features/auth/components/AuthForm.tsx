@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { login, signup, type AuthState } from "@/app/actions/auth";
+import { login, signup, type AuthState } from "../actions";
 
 const input = "w-full rounded border border-border bg-transparent px-3 py-2";
 

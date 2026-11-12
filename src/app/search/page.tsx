@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { SearchResults } from "@/components/SearchResults";
-import { searchArticles } from "@/lib/search";
+import { SearchResults, searchArticles } from "@/features/search";
 
 export const dynamic = "force-dynamic";
 

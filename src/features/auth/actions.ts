@@ -1,8 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createSession, destroySession } from "@/lib/auth/session";
-import { authenticate, createUser } from "@/lib/user-data";
+import { createSession, destroySession } from "./session";
+import { authenticate, createUser } from "./users";
 
 export type AuthState = { error?: string; email?: string };
 

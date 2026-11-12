@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { AuthForm } from "@/components/AuthForm";
-import { getCurrentUser } from "@/lib/auth/session";
+import { AuthForm, getCurrentUser } from "@/features/auth";
 
 export const metadata: Metadata = { title: "로그인" };
 

@@ -1,5 +1,5 @@
-import { prisma } from "./db";
-import { ARTICLE_PARTS } from "./law";
+import { prisma } from "@/shared/db";
+import { ARTICLE_PARTS } from "@/features/law";
 
 export const SEARCH_MAX_ARTICLES = 100;
 

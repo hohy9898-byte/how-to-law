@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LawCards } from "@/components/LawCards";
+import { LawCards } from "@/features/law";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "법령" };

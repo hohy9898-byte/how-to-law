@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LawToolbar } from "@/components/LawToolbar";
-import { SearchResults } from "@/components/SearchResults";
-import { getLaw } from "@/lib/law";
-import { searchArticles } from "@/lib/search";
+import { LawToolbar, getLaw } from "@/features/law";
+import { SearchResults, searchArticles } from "@/features/search";
 
 export const dynamic = "force-dynamic";
 

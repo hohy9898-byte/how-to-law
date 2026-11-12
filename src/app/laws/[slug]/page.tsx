@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LawToolbar } from "@/components/LawToolbar";
-import { prisma } from "@/lib/db";
-import { DIVISIONS, articleHref, articleName, buildTree, getLaw, type TreeNode } from "@/lib/law";
+import { DIVISIONS, LawToolbar, articleHref, articleName, buildTree, getLaw, type TreeNode } from "@/features/law";
+import { prisma } from "@/shared/db";
 
 export const dynamic = "force-dynamic";
 

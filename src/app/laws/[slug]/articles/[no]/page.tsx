@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { toggleBookmarkAction } from "@/app/actions/article";
-import { LawToolbar } from "@/components/LawToolbar";
-import { LinkedText } from "@/components/LinkedText";
-import { NoteEditor } from "@/components/NoteEditor";
-import { getCurrentUser } from "@/lib/auth/session";
-import { prisma } from "@/lib/db";
-import { articleHref, articleName, buildTree, getLaw, keyToParam, normalizeArticleKey, type TreeNode } from "@/lib/law";
-import { getNote, isBookmarked, recordView } from "@/lib/user-data";
+import { getCurrentUser } from "@/features/auth";
+import {
+  LawToolbar,
+  LinkedText,
+  articleHref,
+  articleName,
+  buildTree,
+  getLaw,
+  keyToParam,
+  normalizeArticleKey,
+  type TreeNode,
+} from "@/features/law";
+import { BookmarkButton, NoteEditor, getNote, isBookmarked, recordView } from "@/features/study";
+import { prisma } from "@/shared/db";
 
 export const dynamic = "force-dynamic";
 
@@ -132,20 +138,7 @@ export default async function ArticlePage({ params }: Props) {
             {article.title && `(${article.title})`}
             {article.isDeleted && <span className="ml-2 text-sm font-normal text-muted">삭제</span>}
           </h1>
-          {user && (
-            <form action={toggleBookmarkAction}>
-              <input type="hidden" name="lawId" value={law.id} />
-              <input type="hidden" name="articleKey" value={key} />
-              <input type="hidden" name="path" value={path} />
-              <button
-                aria-pressed={bookmarked}
-                title={bookmarked ? "즐겨찾기 해제" : "즐겨찾기"}
-                className={`shrink-0 rounded border px-2 py-0.5 text-sm ${bookmarked ? "border-accent text-accent" : "border-border hover:text-accent"}`}
-              >
-                {bookmarked ? "★ 즐겨찾기" : "☆ 즐겨찾기"}
-              </button>
-            </form>
-          )}
+          {user && <BookmarkButton lawId={law.id} articleKey={key} path={path} bookmarked={bookmarked} />}
         </div>
         {article.text && (
           <p>

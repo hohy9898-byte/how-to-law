@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { saveNoteAction, type NoteState } from "@/app/actions/article";
+import { saveNoteAction, type NoteState } from "../actions";
 
 type Props = { lawId: string; articleKey: string; path: string; initial: string };
 

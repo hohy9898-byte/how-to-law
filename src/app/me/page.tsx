@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { ArticleList } from "@/components/ArticleList";
-import { getCurrentUser } from "@/lib/auth/session";
-import { listBookmarks, listNotes, listRecentViews } from "@/lib/user-data";
+import { getCurrentUser } from "@/features/auth";
+import { ArticleList, listBookmarks, listNotes, listRecentViews } from "@/features/study";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "내 페이지" };

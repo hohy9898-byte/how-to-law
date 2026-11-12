@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { parseLawText } from "./adapters/text";
 import { extractArticleRefs, listArticles, splitRefs } from "./refs";
 import { articleSortKey } from "./types";
-import { articleName, keyToParam, normalizeArticleKey } from "../law-keys";
+import { articleName, keyToParam, normalizeArticleKey } from "../keys";
 
 const sample = readFileSync(join(__dirname, "__fixtures__", "sample.txt"), "utf8");
 const law = parseLawText(sample);

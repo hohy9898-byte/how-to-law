@@ -79,13 +79,27 @@ DB는 개발 중엔 SQLite, 배포 때 Supabase (PostgreSQL, pgvector)로 옮길
 
 ## 코드 구조
 
-- `src/lib/law-parser/` 원문 → 공통 트리 변환. `adapters/api.ts`가 API 응답용, `adapters/text.ts`가 텍스트 파일용
-- `src/lib/law-api/` 법령정보센터 API 호출 (수집 스크립트에서만 사용)
-- `scripts/` fetch, parse, import 스크립트
-- `prisma/schema.prisma` DB 스키마
-- `src/app/laws/[slug]/` 목차, `articles/[no]` 조문 보기, `search` 검색
-- `src/app/search` 전체 검색, `login`·`signup`·`me` 회원 화면, `actions/` 서버 액션
-- `src/lib/auth/` 비밀번호 해시(scrypt), 세션(httpOnly 쿠키 + DB), `src/lib/user-data.ts` 즐겨찾기·최근 본 조문·메모
+기능별로 폴더를 나눈다. 버그가 나면 해당 기능 폴더만 보면 되게 하려는 것.
+
+```
+src/
+  app/              라우트만. features 함수를 불러 화면을 조립 (_components/는 여러 기능을 섞는 SiteHeader)
+  features/
+    law/            법령 데이터·조문 화면. parser/(원문 → 공통 트리), api-client.ts(법령정보센터 API), queries.ts, keys.ts
+    search/         법령별·전체 검색
+    auth/           가입·로그인, 비밀번호 해시(scrypt), 세션(httpOnly 쿠키 + DB)
+    study/          즐겨찾기, 최근 본 조문, 메모
+  shared/           db.ts, 기능과 무관한 컴포넌트
+scripts/            fetch, parse, import (features/law/parser 사용)
+prisma/             DB 스키마
+```
+
+규칙 (ESLint `no-restricted-imports`로 검사)
+- 다른 기능은 `@/features/<기능>`(index.ts)으로만 import. 같은 기능 안에서는 상대 경로
+- 의존 방향: shared ← law ← search, study. auth는 shared만 사용, study는 auth도 사용. 기능은 app/에 의존하지 않음
+- 각 기능의 서버 액션, 로직, 컴포넌트, 테스트는 그 기능 폴더 안에 둔다
+- `@/features/law` 등 index.ts에는 DB 조회가 섞여 있어서 클라이언트 컴포넌트에서 import하면 안 됨. 클라이언트 컴포넌트는 같은 기능 안의 파일을 상대 경로로 씀
+- 새 기능(빈칸, 복습, 판례, 기출, AI 답안)은 `features/<이름>/`으로 추가
 
 ## 참고
 

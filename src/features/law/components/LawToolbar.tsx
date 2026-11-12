@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { articleHref, normalizeArticleKey } from "@/lib/law-keys";
+import { articleHref, normalizeArticleKey } from "../keys";
 
 /** 조문 번호 바로가기 + 검색 */
 export function LawToolbar({ slug, query = "" }: { slug: string; query?: string }) {

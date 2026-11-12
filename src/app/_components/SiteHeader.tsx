@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { logout } from "@/app/actions/auth";
-import { getCurrentUser } from "@/lib/auth/session";
+import { getCurrentUser, logout } from "@/features/auth";
 
 export async function SiteHeader() {
   const user = await getCurrentUser();

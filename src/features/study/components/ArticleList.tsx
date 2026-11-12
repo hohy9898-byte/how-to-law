@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { articleHref, articleName } from "@/lib/law-keys";
-import type { ArticleListItem } from "@/lib/user-data";
+import { articleHref, articleName } from "@/features/law";
+import type { ArticleListItem } from "../article-list";
 
 const fmt = (d: Date) => d.toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
 

@@ -2,7 +2,7 @@
 // 기본값: data/raw/민법.txt → data/parsed/민법.json
 import { readFileSync } from "node:fs";
 import { basename, join } from "node:path";
-import { parseLawText } from "../src/lib/law-parser/adapters/text";
+import { parseLawText } from "../src/features/law/parser";
 import { saveParsed } from "./lib/save-parsed";
 
 const input = process.argv[2] ?? "data/raw/민법.txt";

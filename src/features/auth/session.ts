@@ -3,7 +3,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { cache } from "react";
-import { prisma } from "../db";
+import { prisma } from "@/shared/db";
 
 const COOKIE = "session";
 const MAX_AGE_DAYS = 30;

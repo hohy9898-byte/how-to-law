@@ -1,11 +1,10 @@
 import { cache } from "react";
 import { notFound } from "next/navigation";
-import { prisma } from "./db";
+import { prisma } from "@/shared/db";
 
 export const DIVISIONS = ["PART", "CHAPTER", "SECTION", "SUBSECTION"];
 export const ARTICLE_PARTS = ["ARTICLE", "PARAGRAPH", "ITEM", "SUBITEM"];
 
-export { articleHref, articleName, keyToParam, normalizeArticleKey } from "./law-keys";
 
 /** 법령과 가장 최근 시행일 버전 */
 export const getLaw = cache(async (slug: string) => {

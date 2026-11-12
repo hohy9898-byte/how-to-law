@@ -3,7 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { PrismaClient } from "@prisma/client";
-import { articleSortKey, type ArticleRef, type LawNode, type ParsedLaw } from "../src/lib/law-parser/types";
+import { articleSortKey, type ArticleRef, type LawNode, type ParsedLaw } from "../src/features/law/parser";
 
 const SLUGS: Record<string, string> = { 민법: "civil" };
 

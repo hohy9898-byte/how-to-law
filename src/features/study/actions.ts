@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
-import { saveNote, toggleBookmark } from "@/lib/user-data";
+import { getCurrentUser } from "@/features/auth";
+import { toggleBookmark } from "./bookmarks";
+import { saveNote } from "./notes";
 
 async function requireUser(path: string) {
   const user = await getCurrentUser();

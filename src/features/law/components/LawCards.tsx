@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/shared/db";
 
 /** 법령 카드 목록. 카드 전체가 목차로 가는 링크 */
 export async function LawCards() {

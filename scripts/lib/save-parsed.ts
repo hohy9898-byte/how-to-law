@@ -1,8 +1,8 @@
 // 공통 트리를 참조 목록과 함께 data/parsed/*.json으로 저장하고 요약을 출력한다.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { extractArticleRefs, listArticles } from "../../src/lib/law-parser/refs";
-import type { ParsedLaw } from "../../src/lib/law-parser/types";
+import { extractArticleRefs, listArticles } from "../../src/features/law/parser";
+import type { ParsedLaw } from "../../src/features/law/parser";
 
 export function saveParsed(law: ParsedLaw, sourceFile: string, output: string) {
   const articles = listArticles(law.nodes);

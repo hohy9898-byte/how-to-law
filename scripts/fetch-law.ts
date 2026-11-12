@@ -2,8 +2,8 @@
 // 기본값: 민법 → data/raw/api/민법.json(원본 응답), data/parsed/민법.json
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { fetchLaw, findCurrentLaw } from "../src/lib/law-api/client";
-import { convertLawApi } from "../src/lib/law-parser/adapters/api";
+import { fetchLaw, findCurrentLaw } from "../src/features/law/api-client";
+import { convertLawApi } from "../src/features/law/parser";
 import { saveParsed } from "./lib/save-parsed";
 
 try {

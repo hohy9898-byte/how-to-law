@@ -4,6 +4,12 @@
 
 개발하면서 막혔던 것들 기록.
 
+### 폴더 구조를 바꾼 뒤 개발 서버가 모든 페이지에 500
+- 날짜: 2026-11-12
+- 문제: 파일을 features/로 옮긴 뒤 켜져 있던 next dev가 `Failed to read source code from ...\src\components\AuthForm.tsx`(옮기기 전 경로)로 500. 파일을 다시 저장하니 일부는 돌아왔지만 이후 `Jest worker encountered 2 child process exceptions, exceeding retry limit`으로 계속 500
+- 원인: 실행 중인 개발 서버가 옛 경로를 캐시에 들고 있고, 대량 이동 중에 내부 작업 프로세스가 죽어서 다시 안 살아남
+- 해결: 개발 서버를 완전히 끄고(남은 node 프로세스까지) 다시 켬. 파일을 많이 옮길 땐 서버를 먼저 끌 것. 그래도 이상하면 `.next` 폴더를 지우고 켬
+
 ### 없는 조문이 404가 아니라 200, 로그인 리다이렉트가 307이 아니라 200
 - 날짜: 2026-11-12
 - 문제: `/laws/civil/articles/9999`가 404 화면은 나오는데 상태 코드는 200. 비로그인으로 `/me`에 가면 307 대신 200

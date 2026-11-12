@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { splitRefs } from "@/lib/law-parser/refs";
-import { articleHref } from "@/lib/law-keys";
+import { splitRefs } from "../parser/refs";
+import { articleHref } from "../keys";
 
 /** 본문 속 "제○조"를 링크로 바꾼다. 실제로 있는 조(known)만 링크한다. */
 export function LinkedText({ text, slug, known }: { text: string; slug: string; known: Set<string> }) {

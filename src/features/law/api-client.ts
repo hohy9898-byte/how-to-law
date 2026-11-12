@@ -1,6 +1,6 @@
 // 국가법령정보센터 Open API 호출. 인증값(OC)은 .env의 LAW_API_OC에서 읽는다.
 // 서비스 화면에서 직접 부르지 않고, 수집 스크립트(배치)에서만 쓴다.
-import type { LawApiResponse } from "../law-parser/adapters/api";
+import type { LawApiResponse } from "./parser/adapters/api";
 
 const BASE = "http://www.law.go.kr/DRF";
 

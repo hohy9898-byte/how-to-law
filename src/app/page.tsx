@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { ArticleList } from "@/components/ArticleList";
-import { LawCards } from "@/components/LawCards";
-import { getCurrentUser } from "@/lib/auth/session";
-import { prisma } from "@/lib/db";
-import { articleHref, articleName } from "@/lib/law-keys";
-import { listBookmarks, listRecentViews } from "@/lib/user-data";
+import { getCurrentUser } from "@/features/auth";
+import { LawCards, articleHref, articleName } from "@/features/law";
+import { ArticleList, listBookmarks, listRecentViews } from "@/features/study";
+import { prisma } from "@/shared/db";
 
 export const dynamic = "force-dynamic";
 

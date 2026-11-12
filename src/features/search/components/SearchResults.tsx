@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { articleHref, articleName } from "@/lib/law-keys";
-import { SEARCH_MAX_ARTICLES, type SearchResult } from "@/lib/search";
+import { articleHref, articleName } from "@/features/law";
+import { SEARCH_MAX_ARTICLES, type SearchResult } from "../search";
 
 export function Highlight({ text, q }: { text: string; q: string }) {
   if (!q) return <>{text}</>;

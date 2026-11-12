@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# Claude Code 개인 설정
+/.claude/settings.local.json
+
 # 로컬 DB, 파싱 결과
 /prisma/*.db
 /prisma/*.db-journal
